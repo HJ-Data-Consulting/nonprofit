@@ -3,6 +3,11 @@ variable "project_id" {
   type        = string
 }
 
+variable "billing_account_id" {
+  description = "GCP Billing Account ID (format: 012345-6789AB-CDEF01)"
+  type        = string
+}
+
 variable "region" {
   description = "GCP Region (Canadian data residency)"
   type        = string

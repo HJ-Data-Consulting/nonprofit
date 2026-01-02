@@ -85,11 +85,12 @@ def seed_grants():
     print(f"Created grant: {grant_data['title']}")
     
     # Add deadline
-    grant_ref.collection('deadlines').document('spring-2025').set({
+    current_year = datetime.now().year
+    grant_ref.collection('deadlines').document(f'spring-{current_year}').set({
         'type': 'fixed',
-        'open_date': '2025-02-01',
-        'close_date': '2025-04-15',
-        'cycle': 'spring_2025'
+        'open_date': (datetime.now() - timedelta(days=30)).strftime('%Y-%m-%d'),
+        'close_date': (datetime.now() + timedelta(days=45)).strftime('%Y-%m-%d'),
+        'cycle': f'spring_{current_year}'
     })
     
     # Add eligibility
@@ -117,7 +118,7 @@ def seed_grants():
     })
     
     # Grant 2: Community Foundation Grant
-    grant_id_2 = 'cfo-community-2025'
+    grant_id_2 = f'cfo-community-{current_year}'
     grant_data_2 = {
         'title': 'Community Vitality Grant',
         'funder_id': 'community-foundation-of-ottawa',

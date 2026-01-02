@@ -6,20 +6,21 @@ set -e
 PROJECT_ID=${1:-grants-platform-dev}
 REGION="northamerica-northeast1"
 
+# Get the directory where the script is located
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Get the project root directory (parent of scripts/)
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+
 echo "Deploying to project: $PROJECT_ID"
+echo "Project root: $ROOT_DIR"
 
-# Deploy Firestore indexes
-echo "Deploying Firestore indexes..."
-gcloud firestore indexes create \
-  --project=$PROJECT_ID \
-  --database='(default)' \
-  --index-file=firestore/indexes.json
+# Deploy Firestore indexes (Commented out - better managed via Terraform)
+# echo "Deploying Firestore indexes..."
+# gcloud firestore indexes composite create ...
 
-# Deploy Firestore security rules
-echo "Deploying Firestore security rules..."
-gcloud firestore deploy \
-  --project=$PROJECT_ID \
-  --rules=firestore/firestore.rules
+# Deploy Firestore security rules (Commented out - better managed via Terraform)
+# echo "Deploying Firestore security rules..."
+# gcloud firestore security-rules rules create --source=$ROOT_DIR/firestore/firestore.rules --project=$PROJECT_ID
 
 # Deploy sync function
 echo "Deploying sync function..."
@@ -29,16 +30,17 @@ gcloud functions deploy sync-to-bigquery \
   --runtime=python311 \
   --trigger-http \
   --entry-point=sync_to_bigquery \
-  --source=functions/sync-to-bigquery \
+  --source=$ROOT_DIR/functions/sync-to-bigquery \
   --service-account=grants-sync-function@$PROJECT_ID.iam.gserviceaccount.com \
-  --set-env-vars=GCP_PROJECT=$PROJECT_ID
+  --set-env-vars=GCP_PROJECT=$PROJECT_ID \
+  --no-allow-unauthenticated
 
 # Deploy API
 echo "Deploying API to Cloud Run..."
 gcloud run deploy grants-api \
   --project=$PROJECT_ID \
   --region=$REGION \
-  --source=api \
+  --source=$ROOT_DIR/api \
   --service-account=grants-api@$PROJECT_ID.iam.gserviceaccount.com \
   --set-env-vars=GCP_PROJECT=$PROJECT_ID \
   --allow-unauthenticated

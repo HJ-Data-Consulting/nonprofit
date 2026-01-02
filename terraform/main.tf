@@ -48,10 +48,11 @@ resource "google_bigquery_table" "grants_flat" {
 
   schema = file("${path.module}/schemas/grants_flat.json")
 
+  require_partition_filter = true
+
   time_partitioning {
-    type  = "DAY"
-    field = "deadline_close"
-    require_partition_filter = true
+    type          = "DAY"
+    field         = "deadline_close"
     expiration_ms = 63072000000  # 730 days (2 years)
   }
 
@@ -149,6 +150,13 @@ resource "google_project_iam_member" "sync_bigquery_write" {
   member  = "serviceAccount:${google_service_account.sync_function.email}"
 }
 
+# Grant BigQuery job user to Sync Function (required for Load Jobs)
+resource "google_project_iam_member" "sync_bigquery_job_user" {
+  project = var.project_id
+  role    = "roles/bigquery.jobUser"
+  member  = "serviceAccount:${google_service_account.sync_function.email}"
+}
+
 # Service Account for API (Cloud Run)
 resource "google_service_account" "api" {
   account_id   = "grants-api"
@@ -222,31 +230,31 @@ resource "google_cloud_scheduler_job" "hourly_sync" {
   depends_on = [google_project_service.required_apis]
 }
 
-# Billing Budget Alert
-resource "google_billing_budget" "monthly_budget" {
-  billing_account = var.billing_account_id
-  display_name    = "${var.environment} Monthly Budget"
-
-  budget_filter {
-    projects = ["projects/${var.project_id}"]
-  }
-
-  amount {
-    specified_amount {
-      currency_code = "USD"
-      units         = tostring(var.billing_budget_amount)
-    }
-  }
-
-  threshold_rules {
-    threshold_percent = 0.5  # Alert at 50%
-  }
-
-  threshold_rules {
-    threshold_percent = 0.9  # Alert at 90%
-  }
-
-  threshold_rules {
-    threshold_percent = 1.0  # Alert at 100%
-  }
-}
+# Billing Budget Alert (Temporarily disabled due to ADC quota issue)
+# resource "google_billing_budget" "monthly_budget" {
+#   billing_account = var.billing_account_id
+#   display_name    = "${var.environment} Monthly Budget"
+#
+#   budget_filter {
+#     projects = ["projects/${var.project_id}"]
+#   }
+#
+#   amount {
+#     specified_amount {
+#       currency_code = "USD"
+#       units         = tostring(var.billing_budget_amount)
+#     }
+#   }
+#
+#   threshold_rules {
+#     threshold_percent = 0.5  # Alert at 50%
+#   }
+#
+#   threshold_rules {
+#     threshold_percent = 0.9  # Alert at 90%
+#   }
+#
+#   threshold_rules {
+#     threshold_percent = 1.0  # Alert at 100%
+#   }
+# }

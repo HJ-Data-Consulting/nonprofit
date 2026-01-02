@@ -60,10 +60,19 @@ def denormalize_grant(db: firestore.Client, grant: Dict[str, Any]) -> Dict[str, 
     
     # Fetch deadlines (take the first active one)
     deadline = None
+    # Fetch deadlines (take the latest one)
+    deadline = None
     deadlines_ref = db.collection('grants').document(grant_id).collection('deadlines')
+    all_deadlines = []
     for deadline_doc in deadlines_ref.stream():
-        deadline = deadline_doc.to_dict()
-        break  # Take first deadline for now
+        d_data = deadline_doc.to_dict()
+        if d_data.get('close_date'):
+            all_deadlines.append(d_data)
+    
+    # Sort by close_date descending
+    if all_deadlines:
+        all_deadlines.sort(key=lambda x: x['close_date'] or '', reverse=True)
+        deadline = all_deadlines[0]
     
     # Fetch eligibility (merge all into single record)
     eligibility = {}
@@ -121,11 +130,25 @@ def denormalize_grant(db: firestore.Client, grant: Dict[str, Any]) -> Dict[str, 
     return flat_record
 
 
+def to_json_serializable(obj):
+    """Recursively convert datetime objects to strings for JSON serialization."""
+    if isinstance(obj, datetime):
+        return obj.isoformat()
+    if isinstance(obj, dict):
+        return {k: to_json_serializable(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [to_json_serializable(i) for i in obj]
+    return obj
+
+
 def upsert_to_bigquery(bq_client: bigquery.Client, records: List[Dict[str, Any]]):
     """Upsert records to BigQuery grants_flat table."""
     if not records:
         print("No records to sync")
         return
+    
+    # Convert datetime objects to JSON-serializable strings
+    records = to_json_serializable(records)
     
     project_id = os.environ.get('GCP_PROJECT')
     table_id = f"{project_id}.grants_warehouse.grants_flat"
@@ -134,7 +157,6 @@ def upsert_to_bigquery(bq_client: bigquery.Client, records: List[Dict[str, Any]]
     job_config = bigquery.LoadJobConfig(
         write_disposition=bigquery.WriteDisposition.WRITE_TRUNCATE,  # For now, full refresh
         source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
-        schema_update_options=[bigquery.SchemaUpdateOption.ALLOW_FIELD_ADDITION],
     )
     
     # TODO: Implement incremental upsert using MERGE statement
