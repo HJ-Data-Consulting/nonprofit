@@ -1,0 +1,170 @@
+[
+  {
+    "name": "grant_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Unique grant identifier"
+  },
+  {
+    "name": "title",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Grant title"
+  },
+  {
+    "name": "summary",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Grant summary/description"
+  },
+  {
+    "name": "funder_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Reference to funder"
+  },
+  {
+    "name": "funder_name",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Denormalized funder name"
+  },
+  {
+    "name": "funder_type",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Type of funder (provincial_government, foundation, etc)"
+  },
+  {
+    "name": "min_amount",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Minimum grant amount"
+  },
+  {
+    "name": "max_amount",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Maximum grant amount"
+  },
+  {
+    "name": "currency",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Currency code (CAD, USD)"
+  },
+  {
+    "name": "status",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Grant status (open, closed, upcoming)"
+  },
+  {
+    "name": "rolling",
+    "type": "BOOL",
+    "mode": "REQUIRED",
+    "description": "Whether grant has rolling deadlines"
+  },
+  {
+    "name": "deadline_open",
+    "type": "DATE",
+    "mode": "NULLABLE",
+    "description": "Application open date"
+  },
+  {
+    "name": "deadline_close",
+    "type": "DATE",
+    "mode": "NULLABLE",
+    "description": "Application close date (partition key)"
+  },
+  {
+    "name": "categories",
+    "type": "STRING",
+    "mode": "REPEATED",
+    "description": "Array of category slugs"
+  },
+  {
+    "name": "eligible_org_types",
+    "type": "STRING",
+    "mode": "REPEATED",
+    "description": "Array of eligible organization types"
+  },
+  {
+    "name": "province",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Province code (ON, BC, etc) - clustering key"
+  },
+  {
+    "name": "city",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "City name"
+  },
+  {
+    "name": "region_type",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Type of geographic restriction"
+  },
+  {
+    "name": "years_active_min",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Minimum years organization must be active"
+  },
+  {
+    "name": "revenue_max",
+    "type": "INT64",
+    "mode": "NULLABLE",
+    "description": "Maximum annual revenue for eligibility"
+  },
+  {
+    "name": "registered_required",
+    "type": "BOOL",
+    "mode": "NULLABLE",
+    "description": "Whether registration/charity status required"
+  },
+  {
+    "name": "application_url",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "URL to apply for grant"
+  },
+  {
+    "name": "source_url",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Source URL for grant information"
+  },
+  {
+    "name": "source_name",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Name of data source"
+  },
+  {
+    "name": "trust_level",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Trust level of source (high, medium, low)"
+  },
+  {
+    "name": "last_verified_at",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "When grant data was last verified - clustering key"
+  },
+  {
+    "name": "created_at",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "When grant was first added"
+  },
+  {
+    "name": "updated_at",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "When grant was last updated"
+  }
+]

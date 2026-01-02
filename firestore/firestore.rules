@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is admin
+    function isAdmin() {
+      // TODO: Replace with actual admin email(s)
+      return request.auth != null && 
+             request.auth.token.email in ['admin@example.com'];
+    }
+    
+    // Helper function to check if request is from service account
+    function isServiceAccount() {
+      return request.auth != null && 
+             request.auth.token.email.matches('.*@.*\\.iam\\.gserviceaccount\\.com');
+    }
+    
+    // Funders collection
+    match /funders/{funderId} {
+      // Only admins can write
+      allow write: if isAdmin();
+      // Service accounts can read (for sync)
+      allow read: if isServiceAccount();
+    }
+    
+    // Grants collection
+    match /grants/{grantId} {
+      // Only admins can write
+      allow write: if isAdmin();
+      // Service accounts can read (for sync)
+      allow read: if isServiceAccount();
+      
+      // Nested collections
+      match /deadlines/{deadlineId} {
+        allow write: if isAdmin();
+        allow read: if isServiceAccount();
+      }
+      
+      match /eligibility/{eligibilityId} {
+        allow write: if isAdmin();
+        allow read: if isServiceAccount();
+      }
+      
+      match /geography/{geoId} {
+        allow write: if isAdmin();
+        allow read: if isServiceAccount();
+      }
+      
+      match /categories/{categoryId} {
+        allow write: if isAdmin();
+        allow read: if isServiceAccount();
+      }
+    }
+    
+    // Categories collection
+    match /categories/{categoryId} {
+      allow write: if isAdmin();
+      allow read: if isServiceAccount();
+    }
+    
+    // Sources collection
+    match /sources/{sourceId} {
+      allow write: if isAdmin();
+      allow read: if isServiceAccount();
+    }
+    
+    // Sync metadata (for tracking last sync time)
+    match /metadata/sync {
+      allow write: if isServiceAccount();
+      allow read: if isServiceAccount();
+    }
+    
+    // Default deny all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

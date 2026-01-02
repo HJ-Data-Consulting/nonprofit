@@ -1,0 +1,6 @@
+pytest==7.4.*
+pytest-cov==4.1.*
+google-cloud-firestore==2.*
+google-cloud-bigquery==3.*
+fastapi==0.109.*
+httpx==0.26.*
