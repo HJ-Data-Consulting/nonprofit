@@ -71,8 +71,29 @@ service cloud.firestore {
     }
     
     // Default deny all
-    match /{document=**} {
-      allow read, write: if false;
+    // Grants collection:
+    // - Reads: Allow public read (for now) or authenticated only depending on needs
+    // - Writes: Allow authenticated users only (Admin UI)
+    match /grants/{grant} {
+      allow read: if true; 
+      allow write: if request.auth != null;
+      
+      match /deadlines/{deadline} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
+      match /geography/{geo} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
+      match /eligibility/{elig} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
+      match /categories/{cat} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
     }
   }
 }

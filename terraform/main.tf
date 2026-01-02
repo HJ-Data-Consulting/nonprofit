@@ -11,10 +11,37 @@ resource "google_project_service" "required_apis" {
     "logging.googleapis.com",
     "monitoring.googleapis.com",
     "redis.googleapis.com",
+    "firebase.googleapis.com",
+    "identitytoolkit.googleapis.com",
+    "aiplatform.googleapis.com",
   ])
 
   service            = each.value
   disable_on_destroy = false
+}
+
+# Enable Firebase services on the project
+resource "google_firebase_project" "default" {
+  provider = google-beta
+  project  = var.project_id
+
+  depends_on = [google_project_service.required_apis]
+}
+
+# Create a Firebase Web App
+resource "google_firebase_web_app" "default" {
+  provider     = google-beta
+  project      = var.project_id
+  display_name = "Grants Admin Panel"
+
+  depends_on = [google_firebase_project.default]
+}
+
+# Fetch Firebase Config (API Key, etc.)
+data "google_firebase_web_app_config" "default" {
+  provider   = google-beta
+  project    = var.project_id
+  web_app_id = google_firebase_web_app.default.app_id
 }
 
 # Firestore Database (Canadian data residency)
@@ -61,6 +88,8 @@ resource "google_bigquery_table" "grants_flat" {
   labels = {
     environment = var.environment
   }
+
+  deletion_protection = false
 }
 
 # BigQuery Table: grants_by_category_daily (derived)
