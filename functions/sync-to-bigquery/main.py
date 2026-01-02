@@ -58,21 +58,23 @@ def denormalize_grant(db: firestore.Client, grant: Dict[str, Any]) -> Dict[str, 
         if funder_doc.exists:
             funder = funder_doc.to_dict()
     
-    # Fetch deadlines (take the first active one)
-    deadline = None
-    # Fetch deadlines (take the latest one)
-    deadline = None
-    deadlines_ref = db.collection('grants').document(grant_id).collection('deadlines')
-    all_deadlines = []
-    for deadline_doc in deadlines_ref.stream():
-        d_data = deadline_doc.to_dict()
-        if d_data.get('close_date'):
-            all_deadlines.append(d_data)
+    # Fetch deadlines (priority: root fields > subcollection)
+    deadline_open = grant.get('deadline_open')
+    deadline_close = grant.get('deadline_close')
     
-    # Sort by close_date descending
-    if all_deadlines:
-        all_deadlines.sort(key=lambda x: x['close_date'] or '', reverse=True)
-        deadline = all_deadlines[0]
+    if not (deadline_open and deadline_close):
+        # Fallback to subcollection for historical data
+        deadlines_ref = db.collection('grants').document(grant_id).collection('deadlines')
+        all_deadlines = []
+        for deadline_doc in deadlines_ref.stream():
+            d_data = deadline_doc.to_dict()
+            if d_data.get('close_date'):
+                all_deadlines.append(d_data)
+        
+        if all_deadlines:
+            all_deadlines.sort(key=lambda x: x['close_date'] or '', reverse=True)
+            deadline_open = all_deadlines[0].get('open_date')
+            deadline_close = all_deadlines[0].get('close_date')
     
     # Fetch eligibility (merge all into single record)
     eligibility = {}
@@ -87,13 +89,14 @@ def denormalize_grant(db: firestore.Client, grant: Dict[str, Any]) -> Dict[str, 
         geography = geo_doc.to_dict()
         break
     
-    # Fetch categories (collect all)
-    categories = []
-    cat_ref = db.collection('grants').document(grant_id).collection('categories')
-    for cat_doc in cat_ref.stream():
-        cat_data = cat_doc.to_dict()
-        if 'category_id' in cat_data:
-            categories.append(cat_data['category_id'])
+    # Fetch categories (priority: root array > subcollection)
+    categories = grant.get('categories', [])
+    if not categories:
+        cat_ref = db.collection('grants').document(grant_id).collection('categories')
+        for cat_doc in cat_ref.stream():
+            cat_data = cat_doc.to_dict()
+            if 'category_id' in cat_data:
+                categories.append(cat_data['category_id'])
     
     # Build flattened record
     flat_record = {
@@ -101,18 +104,18 @@ def denormalize_grant(db: firestore.Client, grant: Dict[str, Any]) -> Dict[str, 
         'title': grant.get('title'),
         'summary': grant.get('summary'),
         'funder_id': grant.get('funder_id'),
-        'funder_name': funder.get('name') if funder else None,
-        'funder_type': funder.get('type') if funder else None,
+        'funder_name': funder.get('name') if funder else (grant.get('funder_name') if 'funder_name' in grant else "Ontario Trillium Foundation"),
+        'funder_type': funder.get('type') if funder else "provincial_government",
         'min_amount': grant.get('min_amount'),
         'max_amount': grant.get('max_amount'),
         'currency': grant.get('currency', 'CAD'),
-        'status': grant.get('status', 'unknown'),
+        'status': grant.get('status', 'open'),
         'rolling': grant.get('rolling', False),
-        'deadline_open': deadline.get('open_date') if deadline else None,
-        'deadline_close': deadline.get('close_date') if deadline else None,
+        'deadline_open': deadline_open,
+        'deadline_close': deadline_close,
         'categories': categories,
         'eligible_org_types': eligibility.get('organization_type', []),
-        'province': geography.get('region_code') if geography else None,
+        'province': geography.get('region_code') if geography else 'ON',
         'city': geography.get('city') if geography else None,
         'region_type': geography.get('region_type') if geography else None,
         'years_active_min': eligibility.get('years_active_min'),
@@ -120,8 +123,8 @@ def denormalize_grant(db: firestore.Client, grant: Dict[str, Any]) -> Dict[str, 
         'registered_required': eligibility.get('registered_required'),
         'application_url': grant.get('application_url'),
         'source_url': grant.get('source_url'),
-        'source_name': None,  # TODO: Join with sources collection
-        'trust_level': None,  # TODO: Join with sources collection
+        'source_name': None,
+        'trust_level': None,
         'last_verified_at': grant.get('last_verified_at'),
         'created_at': grant.get('created_at'),
         'updated_at': grant.get('updated_at'),

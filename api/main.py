@@ -45,27 +45,20 @@ def get_bigquery_client():
 
 
 # Dependency: API Key Validation
-async def validate_api_key(x_api_key: str = Header(...)):
+async def validate_api_key(x_api_key: Optional[str] = Header(None)):
     """
     Validate API key and return tier.
     
-    In production, this would:
-    1. Query Secret Manager for valid API keys
-    2. Check Redis for rate limit counters
-    3. Return tier information
-    
-    For MVP skeleton: accept any key, return 'free' tier
+    In Phase 2 (Public Discovery):
+    - If key is missing: Return 'public' tier (limited results)
+    - If key is provided: Return 'free' tier (for now, eventually 'pro/ent')
     """
-    # TODO: Implement actual API key validation
-    # For now, accept any non-empty key
     if not x_api_key:
-        raise HTTPException(status_code=401, detail="API key required")
+        return {'tier': 'public', 'api_key_hash': None}
     
     # Mock tier detection (would query database in production)
+    # For now, any key unlocks the 'free' tier (unlimited for internal use)
     tier = 'free'
-    
-    # TODO: Check rate limit in Redis
-    # For now, no enforcement (architectural intent only)
     
     return {'tier': tier, 'api_key_hash': hashlib.sha256(x_api_key.encode()).hexdigest()[:8]}
 
@@ -95,14 +88,19 @@ async def search_grants(
     """
     Search and filter grants.
     
-    This is the core API endpoint. Query is backed by BigQuery grants_flat table.
+    Public Tier: Returns only top 5 results, ignores offset/limit.
     """
     bq = get_bigquery_client()
     project_id = os.environ.get('GCP_PROJECT', 'grants-platform-dev')
     
+    # Enforce public tier limits
+    if auth['tier'] == 'public':
+        limit = 5
+        offset = 0
+
     # Build query dynamically
     query_parts = [
-        f"SELECT * FROM `{project_id}.grants_warehouse.grants_flat`",
+        f"SELECT *, count(*) OVER() as total_rows FROM `{project_id}.grants_warehouse.grants_flat`",
         "WHERE 1=1"
     ]
     params = []
@@ -112,8 +110,9 @@ async def search_grants(
         params.append(bigquery.ScalarQueryParameter("province", "STRING", province))
     
     if category:
-        query_parts.append("AND @category IN UNNEST(categories)")
-        params.append(bigquery.ScalarQueryParameter("category", "STRING", category))
+        # Use case-insensitive substring match for flexibility
+        query_parts.append("AND EXISTS (SELECT 1 FROM UNNEST(categories) c WHERE LOWER(c) LIKE @category_pattern)")
+        params.append(bigquery.ScalarQueryParameter("category_pattern", "STRING", f"%{category.lower()}%"))
     
     if min_amount:
         query_parts.append("AND max_amount >= @min_amount")
@@ -132,8 +131,8 @@ async def search_grants(
         query_parts.append("AND deadline_close <= @deadline_cutoff")
         params.append(bigquery.ScalarQueryParameter("deadline_cutoff", "DATE", deadline_cutoff))
     
-    # Always filter by partition (deadline_close) to reduce costs
-    query_parts.append("AND deadline_close >= CURRENT_DATE()")
+    # Always filter by partition (deadline_close) to reduce costs, but include NULLs for rolling grants
+    query_parts.append("AND (deadline_close >= CURRENT_DATE() OR deadline_close IS NULL)")
     
     # Order and pagination
     query_parts.append("ORDER BY deadline_close ASC")
@@ -147,13 +146,18 @@ async def search_grants(
     
     try:
         query_job = bq.query(query, job_config=job_config)
-        results = query_job.result()
+        results = list(query_job.result())
         
         grants = [dict(row) for row in results]
+        # Remove the window function helper from individual rows but keep the count
+        total_count = results[0]['total_rows'] if results else 0
+        for g in grants:
+            g.pop('total_rows', None)
         
         return {
             'grants': grants,
             'count': len(grants),
+            'total_count': total_count,
             'limit': limit,
             'offset': offset,
             'tier': auth['tier']

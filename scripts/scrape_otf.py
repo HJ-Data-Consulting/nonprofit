@@ -69,15 +69,20 @@ def extract_grant_data(client, url, html_content):
 def upsert_grants(db, grants, source_url):
     """Upsert extracted grants to Firestore."""
     for grant in grants:
-        grant_id = f"{grant['id']}-{datetime.now().year}"
+        # Use a more stable ID if possible, or append year for versioning
+        base_id = grant.get('id', grant['title'].lower().replace(' ', '-'))
+        grant_id = f"{base_id}-2026"
         print(f"Upserting {grant_id}: {grant['title']}")
 
         grant_doc = {
-            'funder_id': 'ontario-trillium-foundation', # Default for this script
+            'funder_id': 'ontario-trillium-foundation',
             'title': grant['title'],
             'summary': grant.get('summary', ''),
             'min_amount': grant.get('min_amount'),
             'max_amount': grant.get('max_amount'),
+            'deadline_open': grant.get('open_date'),
+            'deadline_close': grant.get('close_date'),
+            'categories': grant.get('categories', []),
             'application_url': source_url,
             'source_url': source_url,
             'status': 'open',
@@ -89,11 +94,12 @@ def upsert_grants(db, grants, source_url):
         }
         db.collection('grants').document(grant_id).set(grant_doc, merge=True)
 
-        if grant.get('open_date') and grant.get('close_date'):
+        # Still save to subcollection for historical compatibility/detailed tracking
+        if grant.get('open_date') or grant.get('close_date'):
             db.collection('grants').document(grant_id).collection('deadlines').document('current').set({
                 'type': 'fixed',
-                'open_date': grant['open_date'],
-                'close_date': grant['close_date'],
+                'open_date': grant.get('open_date'),
+                'close_date': grant.get('close_date'),
                 'cycle': 'current'
             })
 

@@ -1,0 +1,18 @@
+INFO:     Started server process [273846]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8080 (Press CTRL+C to quit)
+INFO:     127.0.0.1:33972 - "GET /api/v1/grants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33580 - "GET /api/v1/grants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33594 - "GET /api/v1/grants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34354 - "GET /api/v1/grants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:34358 - "GET /api/v1/grants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35138 - "GET /api/v1/grants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35138 - "GET /api/v1/grants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:35146 - "GET /api/v1/grants?category=youth HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44096 - "GET /api/v1/grants?category=arts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49518 - "GET /api/v1/grants?category=youth HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57622 - "GET /api/v1/grants?category=arts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:33470 - "GET /api/v1/grants HTTP/1.1" 200 OK
+INFO:     127.0.0.1:48610 - "GET /api/v1/grants?category=arts HTTP/1.1" 200 OK
+INFO:     127.0.0.1:45568 - "GET /api/v1/grants?category=youth HTTP/1.1" 200 OK
