@@ -166,5 +166,60 @@
     "type": "TIMESTAMP",
     "mode": "REQUIRED",
     "description": "When grant was last updated"
+  },
+  {
+    "name": "eligible_funding",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Specific types of funding (e.g. Up to 75% of project cost)"
+  },
+  {
+    "name": "eligible_industries",
+    "type": "STRING",
+    "mode": "REPEATED",
+    "description": "Array of targeted industries/sectors"
+  },
+  {
+    "name": "financing_type",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Type of financing (e.g. Grant, Tax Credit)"
+  },
+  {
+    "name": "at_a_glance",
+    "type": "RECORD",
+    "mode": "NULLABLE",
+    "fields": [
+      {
+        "name": "candidates",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "location",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "legal_structures",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "annual_revenue",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "org_size",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      },
+      {
+        "name": "audience",
+        "type": "STRING",
+        "mode": "NULLABLE"
+      }
+    ]
   }
 ]

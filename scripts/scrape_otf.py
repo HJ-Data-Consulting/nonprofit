@@ -28,7 +28,7 @@ def extract_grant_data(client, url, html_content):
     1. Extract grant programs found on this page.
     2. Identify URLs to "sub-grants" or related programs mentioned that should be crawled.
 
-    Return ONLY a JSON object:
+    Return ONLY a JSON object with this structure:
     {{
       "grants": [
         {{
@@ -39,7 +39,18 @@ def extract_grant_data(client, url, html_content):
           "max_amount": number_or_null,
           "open_date": "YYYY-MM-DD",
           "close_date": "YYYY-MM-DD",
-          "categories": ["category"]
+          "categories": ["category"],
+          "eligible_funding": "e.g., Up to 75% of project cost",
+          "eligible_industries": ["e.g., Professional services", "Arts"],
+          "financing_type": "e.g., Grant, Tax Credit, or Loan",
+          "at_a_glance": {{
+            "candidates": "e.g., Professional, scientific and technical services",
+            "location": "e.g., Ontario, Canada",
+            "legal_structures": "e.g., Non-profit, Registered Charity",
+            "annual_revenue": "e.g., All revenue ranges",
+            "org_size": "e.g., 1-500 employees",
+            "audience": "e.g., Canadians, Youth (<30)"
+          }}
         }}
       ],
       "sub_links": ["https://..."]
@@ -83,6 +94,10 @@ def upsert_grants(db, grants, source_url):
             'deadline_open': grant.get('open_date'),
             'deadline_close': grant.get('close_date'),
             'categories': grant.get('categories', []),
+            'eligible_funding': grant.get('eligible_funding'),
+            'eligible_industries': grant.get('eligible_industries', []),
+            'financing_type': grant.get('financing_type'),
+            'at_a_glance': grant.get('at_a_glance', {}),
             'application_url': source_url,
             'source_url': source_url,
             'status': 'open',
