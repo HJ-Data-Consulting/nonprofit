@@ -30,8 +30,6 @@ export default function DiscoveryPage() {
             if (category) params.append("category", category);
             if (deadline) params.append("max_deadline_days", deadline);
 
-            // Fetching from the API (Public tier, no X-API-Key)
-            // Note: In prod, this URL would be your Cloud Run endpoint
             const res = await fetch(`http://localhost:8080/api/v1/grants?${params.toString()}`);
             const data = await res.json();
             setGrants(data.grants || []);
@@ -49,56 +47,57 @@ export default function DiscoveryPage() {
     }, [category, deadline]);
 
     return (
-        <div className="min-h-screen bg-[#FBFBFB] text-[#1D1D1F]">
+        <div className="min-h-screen bg-[#F5F5F7] text-[#1D1D1F] selection:bg-blue-100 selection:text-blue-900">
             {/* Navigation */}
-            <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-200">
-                <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <nav className="sticky top-0 z-50 glass border-b border-[#D2D2D7]/30">
+                <div className="max-w-[1380px] mx-auto px-6 h-[52px] flex items-center justify-between font-sans">
                     <div className="flex items-center gap-2">
                         <span className="text-xl font-semibold tracking-tight">GrantsPlatform</span>
-                        <span className="bg-gray-100 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase">Beta</span>
+                        <span className="bg-[#E8E8ED] text-[10px] font-bold px-1.5 py-0.5 rounded uppercase text-[#6E6E73]">Beta</span>
                     </div>
-                    <div className="flex gap-6 text-sm font-medium text-gray-500">
+                    <div className="flex gap-8 text-[12px] font-medium text-[#1D1D1F]/80">
                         <a href="#" className="hover:text-black transition-colors">Pricing</a>
-                        <a href="/login" className="px-4 py-1.5 bg-black text-white rounded-full hover:bg-gray-800 transition-all">Sign In</a>
+                        <a href="/login" className="px-3 py-1 bg-[#1D1D1F] text-white rounded-full hover:bg-black transition-all font-semibold">Sign In</a>
                     </div>
                 </div>
             </nav>
 
             {/* Hero */}
-            <section className="max-w-6xl mx-auto px-6 pt-20 pb-12">
-                <h1 className="text-5xl md:text-6xl font-bold tracking-tight mb-4">
-                    Find your next grant.
-                </h1>
-                <p className="text-xl text-gray-500 max-w-2xl">
-                    The intelligence engine for Ontario nonprofits. Discover curated funding opportunities with real-time accuracy.
-                </p>
+            <section className="max-w-[1380px] mx-auto px-6 pt-32 pb-16">
+                <div className="max-w-4xl">
+                    <h1 className="text-[56px] md:text-[64px] font-bold tracking-[-0.025em] leading-[1.05] mb-6">
+                        Find your next grant.
+                    </h1>
+                    <p className="text-[21px] md:text-[24px] text-[#6E6E73] font-medium leading-relaxed max-w-2xl">
+                        The intelligence engine for Ontario nonprofits. Discover curated funding opportunities with real-time accuracy.
+                    </p>
+                </div>
             </section>
 
             {/* Filters */}
-            <section className="max-w-6xl mx-auto px-6 mb-12">
-                <div className="flex flex-wrap gap-4 items-center p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
-                    <div className="flex-1 min-w-[200px]">
-                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Category</label>
+            <section className="max-w-[1380px] mx-auto px-6 mb-16">
+                <div className="flex flex-wrap gap-6 items-center p-6 glass rounded-[28px] border border-[#D2D2D7]/30 shadow-sm">
+                    <div className="flex-1 min-w-[240px]">
+                        <label className="block text-[11px] font-bold text-[#6E6E73] uppercase tracking-wider mb-2 ml-1">Category</label>
                         <select
                             value={category}
                             onChange={(e) => setCategory(e.target.value)}
-                            className="w-full bg-transparent border-none focus:ring-0 text-sm font-medium h-10 px-2 rounded-lg hover:bg-gray-50 transition-colors"
+                            className="w-full bg-[#E8E8ED]/50 border-none focus:ring-2 focus:ring-blue-500 text-[14px] font-medium h-12 px-4 rounded-xl hover:bg-[#E8E8ED] transition-colors appearance-none"
                         >
                             <option value="">All Categories</option>
-                            <option value="community">Community</option>
                             <option value="youth">Youth</option>
-                            <option value="capital">Capital</option>
-                            <option value="sports">Sports</option>
                             <option value="arts">Arts</option>
                             <option value="environment">Environment</option>
+                            <option value="sports">Sports</option>
+                            <option value="community">Community</option>
                         </select>
                     </div>
-                    <div className="flex-1 min-w-[200px]">
-                        <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Deadline</label>
+                    <div className="flex-1 min-w-[240px]">
+                        <label className="block text-[11px] font-bold text-[#6E6E73] uppercase tracking-wider mb-2 ml-1">Deadline</label>
                         <select
                             value={deadline}
                             onChange={(e) => setDeadline(e.target.value)}
-                            className="w-full bg-transparent border-none focus:ring-0 text-sm font-medium h-10 px-2 rounded-lg hover:bg-gray-50 transition-colors"
+                            className="w-full bg-[#E8E8ED]/50 border-none focus:ring-2 focus:ring-blue-500 text-[14px] font-medium h-12 px-4 rounded-xl hover:bg-[#E8E8ED] transition-colors appearance-none"
                         >
                             <option value="">Any time</option>
                             <option value="30">Next 30 days</option>
@@ -110,34 +109,34 @@ export default function DiscoveryPage() {
             </section>
 
             {/* Grants List */}
-            <section className="max-w-6xl mx-auto px-6 pb-24">
+            <section className="max-w-[1380px] mx-auto px-6 pb-32">
                 {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-pulse">
-                        {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="h-48 bg-gray-100 rounded-3xl"></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="h-[400px] bg-white rounded-[28px] animate-pulse"></div>
                         ))}
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-20">
                         {grants.map((grant) => (
-                            <div key={grant.grant_id} className="group bg-white p-8 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between h-full">
+                            <div key={grant.grant_id} className="group bg-white p-10 rounded-[28px] hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)] hover:-translate-y-1 transition-all duration-500 flex flex-col justify-between h-full border border-white">
                                 <div>
-                                    <div className="flex justify-between items-start mb-4">
-                                        <span className="text-[10px] font-bold text-blue-600 uppercase bg-blue-50 px-2 py-1 rounded">
-                                            {grant.categories?.[0] || 'Uncategorized'}
+                                    <div className="flex justify-between items-start mb-6">
+                                        <span className="text-[11px] font-bold text-[#0066CC] uppercase bg-[#E8E8ED] px-2.5 py-1 rounded-md">
+                                            {grant.categories?.[0] || 'Curated'}
                                         </span>
-                                        <span className="text-sm font-medium text-gray-400">
-                                            Due {grant.deadline_close ? new Date(grant.deadline_close).toLocaleDateString() : 'Rolling'}
+                                        <span className="text-[13px] font-medium text-[#6E6E73]">
+                                            {grant.deadline_close ? `Due ${new Date(grant.deadline_close).toLocaleDateString()}` : 'Rolling'}
                                         </span>
                                     </div>
-                                    <h3 className="text-2xl font-bold mb-2 group-hover:text-blue-600 transition-colors">{grant.title}</h3>
-                                    <p className="text-gray-500 mb-6 font-medium">{grant.funder_name}</p>
+                                    <h3 className="text-[28px] font-bold leading-tight mb-3 group-hover:text-[#0066CC] transition-colors line-clamp-2 tracking-tight">{grant.title}</h3>
+                                    <p className="text-[17px] text-[#6E6E73] font-medium mb-8 leading-snug">{grant.funder_name}</p>
                                 </div>
 
-                                <div className="flex items-end justify-between">
+                                <div className="flex items-end justify-between pt-6 border-t border-[#F5F5F7]">
                                     <div>
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase block mb-1">Max Amount</span>
-                                        <span className="text-xl font-bold">
+                                        <span className="text-[11px] font-bold text-[#6E6E73] uppercase tracking-wider block mb-1">Max Amount</span>
+                                        <span className="text-[24px] font-bold tracking-tight">
                                             {grant.max_amount ? `$${grant.max_amount.toLocaleString()}` : "N/A"}
                                         </span>
                                     </div>
@@ -145,9 +144,9 @@ export default function DiscoveryPage() {
                                         href={grant.source_url}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex items-center gap-2 text-sm font-bold text-black border-2 border-black px-4 py-2 rounded-full hover:bg-black hover:text-white transition-all"
+                                        className="flex items-center gap-2 text-[14px] font-bold text-white bg-[#1D1D1F] px-6 py-2.5 rounded-full hover:bg-black shadow-sm transition-all"
                                     >
-                                        View Source
+                                        Details
                                     </a>
                                 </div>
                             </div>
@@ -157,28 +156,30 @@ export default function DiscoveryPage() {
 
                 {/* Soft Gate */}
                 {tier === 'public' && totalCount > grants.length && (
-                    <div className="bg-black text-white p-12 rounded-[40px] text-center max-w-3xl mx-auto shadow-2xl overflow-hidden relative">
-                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-                        <h2 className="text-3xl font-bold mb-4">Showing {grants.length} of {totalCount} grants.</h2>
-                        <p className="text-gray-400 mb-8 max-w-md mx-auto">
-                            Get full access to our entire database, advanced filters, and real-time grant alerts.
+                    <div className="bg-[#1D1D1F] text-white p-16 rounded-[40px] text-center max-w-4xl mx-auto shadow-2xl relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-1.5 bg-[#0066CC]"></div>
+                        <h2 className="text-[32px] md:text-[40px] font-bold mb-6 tracking-tight">Showing {grants.length} of {totalCount} grants.</h2>
+                        <p className="text-[19px] text-[#A1A1A6] mb-12 max-w-xl mx-auto leading-relaxed font-medium">
+                            Unlock our full intelligence database, advanced filtering, and instant grant alerts for your sector.
                         </p>
-                        <LeadForm />
-                        <p className="text-[10px] text-zinc-500 mt-6 uppercase tracking-widest font-bold">
-                            No credit card required • Join 200+ nonprofits
+                        <div className="max-w-md mx-auto">
+                            <LeadForm />
+                        </div>
+                        <p className="text-[11px] text-[#6E6E73] mt-10 uppercase tracking-[0.2em] font-bold">
+                            Trusted by 200+ Ontario Nonprofits
                         </p>
                     </div>
                 )}
             </section>
 
             {/* Footer */}
-            <footer className="border-t border-gray-200 py-12">
-                <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-8">
-                    <p className="text-sm text-gray-400 font-medium">© 2026 HJD Consulting. All rights reserved.</p>
-                    <div className="flex gap-8 text-sm font-bold text-gray-400 uppercase tracking-tight">
-                        <a href="#" className="hover:text-black">Privacy</a>
-                        <a href="#" className="hover:text-black">Terms</a>
-                        <a href="#" className="hover:text-black">Twitter</a>
+            <footer className="footer-content max-w-[1380px] mx-auto px-6 py-20 border-t border-[#D2D2D7]/30">
+                <div className="flex flex-col md:flex-row justify-between items-center gap-10">
+                    <p className="text-[12px] text-[#6E6E73] font-medium">Copyright © 2026 HJD Consulting. All rights reserved.</p>
+                    <div className="flex gap-10 text-[12px] font-bold text-[#6E6E73] uppercase tracking-widest">
+                        <a href="#" className="hover:text-[#1D1D1F] transition-colors">Privacy Policy</a>
+                        <a href="#" className="hover:text-[#1D1D1F] transition-colors">Terms of Use</a>
+                        <a href="#" className="hover:text-[#1D1D1F] transition-colors">Twitter</a>
                     </div>
                 </div>
             </footer>

@@ -1,37 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { db } from "../lib/firebase";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { useState } from 'react';
+import { db } from '../lib/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
-interface LeadFormProps {
-    onSuccess?: () => void;
-}
-
-export default function LeadForm({ onSuccess }: LeadFormProps) {
-    const [email, setEmail] = useState("");
+export default function LeadForm() {
+    const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-    const [error, setError] = useState("");
+    const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!email) return;
-
         setLoading(true);
-        setError("");
+        setError(null);
 
         try {
-            await addDoc(collection(db, "leads"), {
+            await addDoc(collection(db, 'leads'), {
                 email,
-                source: "discovery_soft_gate",
-                created_at: serverTimestamp(),
+                source: 'discovery_page',
+                tier_interest: 'pro',
+                timestamp: serverTimestamp()
             });
             setSubmitted(true);
-            if (onSuccess) onSuccess();
-        } catch (err: any) {
-            console.error("Failed to save lead", err);
-            setError("Something went wrong. Please try again.");
+        } catch (err) {
+            console.error('Lead capture failed:', err);
+            setError('Something went wrong. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -39,33 +33,36 @@ export default function LeadForm({ onSuccess }: LeadFormProps) {
 
     if (submitted) {
         return (
-            <div className="text-center animate-in fade-in zoom-in duration-500">
-                <h3 className="text-2xl font-bold mb-2">You're on the list! </h3>
-                <p className="text-gray-400">We'll notify you when full access is available.</p>
+            <div className="bg-white/10 border border-white/20 p-8 rounded-[32px] animate-in fade-in zoom-in duration-500">
+                <p className="text-[24px] font-bold text-white mb-2">You're on the list!</p>
+                <p className="text-[#A1A1A6] font-medium leading-relaxed">We'll notify you as soon as the Pro platform launches in your region.</p>
             </div>
         );
     }
 
+    const status = loading ? 'loading' : (submitted ? 'success' : 'idle');
+
     return (
-        <form onSubmit={handleSubmit} className="w-full max-w-lg mx-auto">
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-                <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your work email"
-                    className="bg-zinc-900 border-none rounded-full px-6 py-3 w-full sm:w-auto min-w-[280px] focus:ring-2 focus:ring-blue-500 transition-all font-medium text-white"
-                />
-                <button
-                    type="submit"
-                    disabled={loading}
-                    className="bg-white text-black font-bold px-8 py-3 rounded-full hover:bg-gray-100 transition-all w-full sm:w-auto disabled:opacity-50"
-                >
-                    {loading ? "Joining..." : "Get Early Access"}
-                </button>
-            </div>
-            {error && <p className="text-red-500 text-xs mt-4 font-bold uppercase tracking-widest">{error}</p>}
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+            <input
+                type="email"
+                placeholder="Enter your email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="flex-1 bg-white/10 border border-white/20 text-white placeholder:text-white/40 px-6 py-4 rounded-full focus:outline-none focus:ring-2 focus:ring-[#0066CC] transition-all font-medium"
+            />
+            <button
+                type="submit"
+                disabled={status === 'loading'}
+                className={`px-8 py-4 rounded-full font-bold text-[15px] transition-all transform active:scale-95 whitespace-nowrap ${status === 'loading'
+                        ? 'bg-white/20 text-white/50 cursor-not-allowed'
+                        : 'bg-white text-[#1D1D1F] hover:bg-[#E8E8ED]'
+                    }`}
+            >
+                {status === 'loading' ? 'Processing...' : 'Get Early Access'}
+            </button>
+            {error && <p className="text-[#FF453A] text-xs mt-4 font-bold uppercase tracking-widest">{error}</p>}
         </form>
     );
 }
